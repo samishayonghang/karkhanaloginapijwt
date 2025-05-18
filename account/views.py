@@ -1,4 +1,4 @@
-from django.shortcuts import render
+
 from.serializers import RegisterSerializer,SendPasswordResetEmailSerializer,UserPasswordResetSerializer
 from rest_framework import generics
 from django.contrib.auth import get_user_model
@@ -16,6 +16,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 class SendPasswordResetEmailView(APIView):
+    
     def post(self,request,format=None):
         serializer=SendPasswordResetEmailSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):

@@ -52,9 +52,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     
 class SendPasswordResetEmailSerializer(serializers.Serializer):
     email=serializers.EmailField(max_length=255)
-    class Meta:
-        fields=['email']
-
+  
     def validate(self,attrs):
         email=attrs.get('email')
         if User.objects.filter(email=email).exists():
@@ -64,12 +62,13 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             token=PasswordResetTokenGenerator().make_token(user)
             link='http://localhost:3000/account/user/reset/'+uid+'/'+token
             
-            data={
-                'subject':'Reset your password',
-                'body': f'Click the following link to reset your password:\n{link}',
-
-                'to_email':user.email
-            }
+            data = {
+                    'subject': 'Reset your password',
+                    'body': 'Please reset your password using the link below:',
+                    'link':link,
+                    'to_email': user.email,
+                  }
+           
             Util.send_email(data)
             return attrs
             
@@ -80,10 +79,7 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
 class UserPasswordResetSerializer(serializers.Serializer):
     password=serializers.CharField(max_length=255,write_only=True)
     password2=serializers.CharField(max_length=255,write_only=True)
-    class Meta:
-        model=User
-        fields=['password','password2']
-
+   
     def validate(self,attrs):
        try:
             password=attrs.get('password')
@@ -100,9 +96,8 @@ class UserPasswordResetSerializer(serializers.Serializer):
             user.save()
             
             
-       except DjangoUnicodeDecodeError as identifier:
-            PasswordResetTokenGenerator().check_token(user,token)
-            raise ValidationError("Token is not valid or expired")
+       except (DjangoUnicodeDecodeError, User.DoesNotExist):
+            raise ValidationError("Invalid UID or user not found")
        return attrs
 
 
